@@ -32,7 +32,7 @@ import fishvr.rosutil
 
 # import RL model of virtual fish 
 
-from fish_deployment_interface import FishDeploymentAgent
+from RL_module.fish_deployment_interface import FishDeploymentAgent
 
 
 class VirtualConspecificExperiment(fishvr.experiment.Experiment):
