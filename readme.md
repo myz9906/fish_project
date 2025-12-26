@@ -1,27 +1,74 @@
-## 第一步：
+# Overview
 
-cd 到 fish_project 的文件夹
+This repository contains the code implementation for visual steering of fish locomotion using Reinforcement Learning (RL).
 
-## 第二步：
+The core component is the interface script, `fish_deployment_interface.py`. This interface takes the current position of the **real fish** as input and outputs the target position for the **virtual fish** for the next time step.
 
-### 创建环境
+This interface is integrated into the main control loop, `YizeMi_1VF_SysId_Ctr.py`. The control logic follows a two-stage process:
+
+1. **Initialization:** The virtual fish guides the real fish in a **clockwise circular motion**.
+2. **RL Guidance:** Once the system detects that the real fish has followed the virtual fish, it switches to the RL model to guide the fish along specific trajectories (e.g., letter shapes).
+
+
+
+## Getting Started
+
+### Installation
+
+Follow these steps to set up the environment and run the code:
+
+**Step 1: Clone the repository and enter the directory**
+
+```shell
+git clone https://github.com/myz9906/fish_project.git
+cd fish_project
+```
+
+**Step 2: Install dependencies** We recommend using Conda to manage the environment.
+
+```shell
 conda env create -f environment.yml
+```
 
-### 激活环境
+**Step 3: Activate the environment**
+
+```shell
 conda activate fish_RL
+```
 
+### Updates in `YizeMi_1VF_SysId_Ctr.py`
 
+#### 1. Circular Motion Direction
 
-# 文件说明
+The initial circular motion has been updated from **counter-clockwise to clockwise**. This change ensures a smoother and more natural transition when the system switches from the circling phase to the specific letter-shaped trajectories.
 
-**interaction_train without_theta.py** 是用来训练真实鱼的动力学的代码
+#### 2. Model Selection for Debugging
 
-**models.py** 里面是模拟真鱼动力学的神经网络模型，目前用的是三层的MLP网络
+We provide two pre-trained RL models with different parameters for debugging purposes. The primary difference between them is the **Reachable Set constraint** (the maximum allowable distance between the virtual and real fish) used during training:
 
-**test_trained_model.py**: 可视化每个trail的数据，以及展示神经网络对动力学预测的效果，里面调用的神经网络模型就是DynamicsModel_without_theta.pth
+- **Model A:** Constraint set to **0.01m**.
+- **Model B:** Constraint set to **0.02m**.
 
-**test_trained_model_Letter_M.py**：测试函数，用来查看当虚拟鱼走"M"字样时，真实鱼的运动路线是怎样的。如果说主函数是通过真实鱼反求虚拟鱼运动，那么这个测试函数就是正过来的情况：已知虚拟鱼的运动，看神经网络得到的真实鱼该怎么走。目前测试下来的结果说明至少真实鱼也能走一个M字样出来，至少说明神经网络训练能work
+You can switch between models by uncommenting the desired line in the code:
 
-**model_utils.py**: 加载训练好的network模型
+```python
+# Use the 0.01m constraint model
+MODEL_PATH_PROCESS = "checkpoints/letter_M_100_Hz_size_vr_ReachableSet_001/rl_model_9900000_steps.zip"
 
-**sim.py**: 真鱼和虚拟鱼的动力学更新
+## Use the 0.02m constraint model
+# MODEL_PATH_PROCESS = "checkpoints/letter_M_100_Hz_size_vr_ReachableSet_002/rl_model_9900000_steps.zip"
+```
+
+#### 3. Experimental Configurations
+
+To evaluate the guidance performance under different conditions, the system is designed to cycle through different parameter sets during runtime. We currently test three specific configurations (rounds):
+
+```python
+Experiment_Configs = [
+    {'rx': 0.01,  'ry': 0.01,  'type': 'box'},    # Config for Round 1
+    {'rx': 0.02,  'ry': 0.02,  'type': 'box'},    # Config for Round 2
+    {'rx': 0.01,  'ry': 0.01,  'type': 'circle'}, # Config for Round 3
+]
+```
+
+**Logic:** When `self._Flag_round == Test_duration`, the system automatically switches to the next configuration in the list for the subsequent round of testing.

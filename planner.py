@@ -95,7 +95,7 @@ class LetterPlanner:
 
     def step(self, x_r, y_r):
         
-        self.offset = torch.tensor([x_r-self.dx0, y_r-self.dy0], device=self.device, dtype=self.dtype)
+        self.offset = torch.tensor([x_r-self.dx0, y_r-self.dy0], device=self.device, dtype=self.dtype)    # 这个offset 好像只是在初始化的时候更新一次就可以了，不用一直更新
         # 指针前移
         self.step_count = min(self.step_count + 1, self.T - 1)  # 最终的输出是numpy类型
 
